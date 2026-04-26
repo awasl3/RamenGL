@@ -26,9 +26,10 @@
 #include "../ramen/rgl_utils.h"
 
 
-#include "geometry/cube.cpp"
-#include "geometry/cylinder.cpp"
-#include "geometry/sphere.cpp"
+#include "../util/mesh.h"
+#include "geometry/cube.h"
+#include "geometry/cylinder.h"
+#include "geometry/sphere.h"
 
 int main(int argc, char** argv)
 {
@@ -56,14 +57,18 @@ int main(int argc, char** argv)
     size_t size = 6;
     std::vector<Vertex> vec(data, data + size);
     Mesh coordMesh = Mesh(vec);
-    Cube cube = Cube(Vec3f(1.f, 0.f, 0.f));
-    Cylinder cylinder = Cylinder(Vec3f(1.f, 0.f, 0.f), 8);
-    Sphere sphere = Sphere(Vec3f(1.f, 0.f, 0.f));
-
-    /* Geometry selection */
+    /* All controls write into this. Geometry is rebuilt from it each frame. */
     enum Geometry { GEO_SPHERE = 0, GEO_CUBE = 1, GEO_CYLINDER = 2 };
+    struct ImGuiState
+    {
+        int   selectedGeometry = GEO_SPHERE;
+        float color[3]         = { 1.f, 0.f, 0.f };
+        bool  useNormAsColor   = false;
+        bool  drawNorms        = false;
+        int   tesselation = 8;
+    };
+    ImGuiState state;
     const char* geometryNames[] = { "Sphere", "Cube", "Cylinder" };
-    int selectedGeometry = GEO_SPHERE;
 
     /* Some global GL states */
     glEnable(GL_DEPTH_TEST);
@@ -127,7 +132,11 @@ int main(int argc, char** argv)
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
         ImGui::Begin("Controls");
-        ImGui::Combo("Geometry", &selectedGeometry, geometryNames, IM_ARRAYSIZE(geometryNames));
+        ImGui::Combo("Geometry", &state.selectedGeometry, geometryNames, IM_ARRAYSIZE(geometryNames));
+        ImGui::ColorEdit3("Color", state.color);
+        ImGui::Checkbox("Use norm as color", &state.useNormAsColor);
+         ImGui::Checkbox("Draw norms", &state.drawNorms);
+        ImGui::SliderInt("Tesselation", &state.tesselation, 3, 64);
         ImGui::End();
         /* ImGUI Rendering */
         ImGui::Render();
@@ -143,11 +152,31 @@ int main(int argc, char** argv)
         glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
         coordMesh.draw(GL_LINES);
 
-        switch ( selectedGeometry )
+        /* Build only the selected geometry from current ImGui state, draw it, free it. */
+        Vec3f c(state.color[0], state.color[1], state.color[2]);
+        switch ( state.selectedGeometry )
         {
-        case GEO_SPHERE:   sphere.draw(modelMat, viewMat, projMat);   break;
-        case GEO_CUBE:     cube.draw(modelMat, viewMat, projMat);     break;
-        case GEO_CYLINDER: cylinder.draw(modelMat, viewMat, projMat); break;
+        case GEO_SPHERE:
+        {
+            Sphere s(c, state.tesselation, state.useNormAsColor, state.drawNorms);
+            s.draw(modelMat, viewMat, projMat);
+            s.deleteBuffers();
+            break;
+        }
+        case GEO_CUBE:
+        {
+            Cube cube(c, state.useNormAsColor, state.drawNorms);
+            cube.draw(modelMat, viewMat, projMat);
+            cube.deleteBuffers();
+            break;
+        }
+        case GEO_CYLINDER:
+        {
+            Cylinder cyl(c, state.tesselation, state.useNormAsColor, state.drawNorms);
+            cyl.draw(modelMat, viewMat, projMat);
+            cyl.deleteBuffers();
+            break;
+        }
         }
 
         
@@ -160,9 +189,6 @@ int main(int argc, char** argv)
     /* GL Resources shutdown. */
     shader.Delete();
     coordMesh.deleteBuffers();
-    cube.deleteBuffers();
-    cylinder.deleteBuffers();
-    sphere.deleteBuffers();
 
     /* Ramen Shutdown */
     pRamen->Shutdown();

@@ -31,6 +31,12 @@ add_executable(task03
     ../../ramen/rgl_image.cpp
     ../../ramen/rgl_utils.cpp
 
+    ../util/mesh.cpp
+
+    ./util/vertex.cpp
+    ./geometry/cube.cpp
+    ./geometry/cylinder.cpp
+    ./geometry/sphere.cpp
     ./task03.cpp
 )
 
