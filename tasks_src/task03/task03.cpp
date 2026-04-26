@@ -25,6 +25,8 @@
 #include "../ramen/rgl_shader.h"
 #include "../ramen/rgl_utils.h"
 
+#include "../util/mesh.cpp"
+
 int main(int argc, char** argv)
 {
     Filesystem* pFS = Filesystem::Init(argc, argv, "assets");
@@ -47,26 +49,10 @@ int main(int argc, char** argv)
     Mat4f modelMat = Mat4f::Identity();
 
     /* Use coordinate system as a dummy model so you see how VBO, VAOs work again. */
-    GLuint VBO;
-    glCreateBuffers(1, &VBO);
-    glNamedBufferData(VBO, 6 * sizeof(Vertex), Utils::CoordSystemRHZU(), GL_STATIC_DRAW);
-
-    /* VAO. */
-    GLuint VAO;
-    glCreateVertexArrays(1, &VAO);
-    glVertexArrayVertexBuffer(VAO, 0, VBO, 0, sizeof(Vertex));
-    /* Position */
-    glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
-    glEnableVertexArrayAttrib(VAO, 0);
-    glVertexArrayAttribBinding(VAO, 0, 0);
-    /* Normal */
-    glVertexArrayAttribFormat(VAO, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
-    glEnableVertexArrayAttrib(VAO, 1);
-    glVertexArrayAttribBinding(VAO, 1, 0);
-    /* Color */
-    glVertexArrayAttribFormat(VAO, 2, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float));
-    glEnableVertexArrayAttrib(VAO, 2);
-    glVertexArrayAttribBinding(VAO, 2, 0);
+    const Vertex* data = Utils::CoordSystemRHZU();
+    size_t size = 6;
+    std::vector<Vertex> vec(data, data + size);
+    Mesh coordMesh = Mesh(vec);
 
     /* Some global GL states */
     glEnable(GL_DEPTH_TEST);
@@ -138,12 +124,12 @@ int main(int argc, char** argv)
         glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
 
         shader.Use();
-        glBindVertexArray(VAO);
+        coordMesh.activate();
         glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());
         glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
         glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
 
-        glDrawArrays(GL_LINES, 0, 6);
+        coordMesh.draw(GL_LINES);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -152,8 +138,7 @@ int main(int argc, char** argv)
 
     /* GL Resources shutdown. */
     shader.Delete();
-    glDeleteBuffers(1, &VBO);
-    glDeleteVertexArrays(1, &VAO);
+    coordMesh.deleteBuffers();
 
     /* Ramen Shutdown */
     pRamen->Shutdown();

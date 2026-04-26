@@ -21,6 +21,10 @@ struct Mesh
         glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
         glEnableVertexArrayAttrib(vao, 1);
         glVertexArrayAttribBinding(vao, 1, 0);
+        /* Color */
+        glVertexArrayAttribFormat(vao, 2, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float));
+        glEnableVertexArrayAttrib(vao, 2);
+        glVertexArrayAttribBinding(vao, 2, 0);
     }
 
     void deleteBuffers() {
@@ -32,8 +36,8 @@ struct Mesh
         glBindVertexArray(vao);
     }
 
-    void draw() {
-        glDrawArrays(GL_TRIANGLES, 0, count);
+    void draw(int glForm = GL_TRIANGLES) {
+        glDrawArrays(glForm, 0, count);
     }
 };
 
