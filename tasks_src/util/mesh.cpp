@@ -1,3 +1,5 @@
+#pragma once
+
 #include <glad/glad.h>
 
 struct Mesh
@@ -6,6 +8,8 @@ struct Mesh
     GLuint vbo, vao;
     int count;
 
+
+    Mesh(){};
     Mesh(const std::vector<Vertex>& verts) {
         count = verts.size();
         glCreateBuffers(1, &vbo);

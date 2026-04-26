@@ -25,7 +25,10 @@
 #include "../ramen/rgl_shader.h"
 #include "../ramen/rgl_utils.h"
 
-#include "../util/mesh.cpp"
+
+#include "geometry/cube.cpp"
+#include "geometry/cylinder.cpp"
+#include "geometry/sphere.cpp"
 
 int main(int argc, char** argv)
 {
@@ -53,6 +56,14 @@ int main(int argc, char** argv)
     size_t size = 6;
     std::vector<Vertex> vec(data, data + size);
     Mesh coordMesh = Mesh(vec);
+    Cube cube = Cube(Vec3f(1.f, 0.f, 0.f));
+    Cylinder cylinder = Cylinder(Vec3f(1.f, 0.f, 0.f), 8);
+    Sphere sphere = Sphere(Vec3f(1.f, 0.f, 0.f));
+
+    /* Geometry selection */
+    enum Geometry { GEO_SPHERE = 0, GEO_CUBE = 1, GEO_CYLINDER = 2 };
+    const char* geometryNames[] = { "Sphere", "Cube", "Cylinder" };
+    int selectedGeometry = GEO_SPHERE;
 
     /* Some global GL states */
     glEnable(GL_DEPTH_TEST);
@@ -115,7 +126,9 @@ int main(int argc, char** argv)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
-
+        ImGui::Begin("Controls");
+        ImGui::Combo("Geometry", &selectedGeometry, geometryNames, IM_ARRAYSIZE(geometryNames));
+        ImGui::End();
         /* ImGUI Rendering */
         ImGui::Render();
 
@@ -128,8 +141,16 @@ int main(int argc, char** argv)
         glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());
         glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
         glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
-
         coordMesh.draw(GL_LINES);
+
+        switch ( selectedGeometry )
+        {
+        case GEO_SPHERE:   sphere.draw(modelMat, viewMat, projMat);   break;
+        case GEO_CUBE:     cube.draw(modelMat, viewMat, projMat);     break;
+        case GEO_CYLINDER: cylinder.draw(modelMat, viewMat, projMat); break;
+        }
+
+        
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -139,6 +160,9 @@ int main(int argc, char** argv)
     /* GL Resources shutdown. */
     shader.Delete();
     coordMesh.deleteBuffers();
+    cube.deleteBuffers();
+    cylinder.deleteBuffers();
+    sphere.deleteBuffers();
 
     /* Ramen Shutdown */
     pRamen->Shutdown();
