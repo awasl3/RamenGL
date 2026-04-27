@@ -44,7 +44,6 @@ std::tuple<std::vector<Vertex>, std::vector<Vertex>> CreateSphere(const Vec3f& c
     float       endLong = RAMEN_PI * 2.f;
     float       stepLat  = (endLat) / tesselation;
     float       stepLong = (endLong) / tesselation;
-
     for (float i = 0; i < tesselation; i++)
     {
         float lat     = i * stepLat;
@@ -75,13 +74,14 @@ std::tuple<std::vector<Vertex>, std::vector<Vertex>> CreateSphere(const Vec3f& c
 
             // Triangle 1
             CreateVertices(sphereVerts, normVerts, v00, n00, color, useNormAsColor, drawNorms);
-            CreateVertices(sphereVerts, normVerts, v10, n10, color, useNormAsColor, drawNorms);
             CreateVertices(sphereVerts, normVerts, v01, n01, color, useNormAsColor, drawNorms);
+            CreateVertices(sphereVerts, normVerts, v10, n10, color, useNormAsColor, drawNorms);
 
             // Triangle 2
             CreateVertices(sphereVerts, normVerts, v01, n01, color, useNormAsColor, drawNorms);
-            CreateVertices(sphereVerts, normVerts, v10, n10, color, useNormAsColor, drawNorms);
             CreateVertices(sphereVerts, normVerts, v11, n11, color, useNormAsColor, drawNorms);
+            CreateVertices(sphereVerts, normVerts, v10, n10, color, useNormAsColor, drawNorms);
+        
         }
     }
 
