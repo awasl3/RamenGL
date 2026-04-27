@@ -124,6 +124,11 @@ class Camera
         m_Position = m_Position + (amount * m_Right);
     }
 
+    void DollyUp(const float& amount)
+    {
+        m_Position = m_Position + (amount * m_Up);
+    }
+
   private:
     Vec3f m_Position;
     Vec3f m_Forward;

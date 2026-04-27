@@ -105,7 +105,32 @@ int main(int argc, char** argv)
                     isRunning = false;
                 }
                 break;
+                // Forward
+                case SDLK_W: { camera.DollyForward(0.1f);}break;
+                // BAckward
+                case SDLK_S: { camera.DollyForward(-0.1f);}break;
+                // Left
+                case SDLK_A: { camera.DollySide(-0.1f);}break;
+                // Right
+                case SDLK_D: { camera.DollySide(0.1f);}break;
+                // Up
+                case SDLK_R: { camera.DollyUp(0.1f);}break;
+                // Down
+                case SDLK_F: { camera.DollyUp(-0.1f);}break;
+                // Pitch up
+                case SDLK_UP: { camera.Pitch(2.0f);}break;
+                // Pitch down
+                case SDLK_DOWN: { camera.Pitch(-2.0f);}break;
+                // Yaw left
+                case SDLK_LEFT: { camera.Yaw(2.0f);}break;
+                // Yaw right
+                case SDLK_RIGHT: { camera.Yaw(-2.0f);}break;
 
+                // Roll left
+                case SDLK_Q: { camera.Roll(-2.0f);}break;
+                // Rollright
+                case SDLK_E: { camera.Roll(2.0f);}break;
+                
                 default:
                 {
                 }
@@ -134,13 +159,20 @@ int main(int argc, char** argv)
         ImGui::NewFrame();
         ImGui::Begin("Controls");
         if(ImGui::CollapsingHeader("Scene controls", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Combo("Geometry", &state.selectedGeometry, geometryNames, IM_ARRAYSIZE(geometryNames));
-        ImGui::ColorEdit3("Color", state.color);
-        ImGui::Checkbox("Use norm as color", &state.useNormAsColor);
-         ImGui::Checkbox("Draw norms", &state.drawNorms);
-        ImGui::SliderInt("Tesselation", &state.tesselation, 3, 64);
+            ImGui::Combo("Geometry", &state.selectedGeometry, geometryNames, IM_ARRAYSIZE(geometryNames));
+            ImGui::ColorEdit3("Color", state.color);
+            ImGui::Checkbox("Use norm as color", &state.useNormAsColor);
+            ImGui::Checkbox("Draw norms", &state.drawNorms);
+            ImGui::SliderInt("Tesselation", &state.tesselation, 3, 64);
             ImGui::InputFloat3("Light position", state.lightPos);
         }
+        if(ImGui::CollapsingHeader("Camera controls", ImGuiTreeNodeFlags_DefaultOpen)) {
+           ImGui::Text("WASD    - move camera");
+            ImGui::Text("R/F    - move up/down");
+            ImGui::Text("Arrows - pitch / yaw");
+            ImGui::Text("Q/E    - roll");
+        }
+       
         ImGui::End();
         /* ImGUI Rendering */
         ImGui::Render();
