@@ -66,6 +66,7 @@ int main(int argc, char** argv)
         bool  useNormAsColor   = false;
         bool  drawNorms        = false;
         int   tesselation = 8;
+        float lightPos[3] = { 2.f, 2.f, 2.f};
     };
     ImGuiState state;
     const char* geometryNames[] = { "Sphere", "Cube", "Cylinder" };
@@ -132,11 +133,14 @@ int main(int argc, char** argv)
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
         ImGui::Begin("Controls");
+        if(ImGui::CollapsingHeader("Scene controls", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Combo("Geometry", &state.selectedGeometry, geometryNames, IM_ARRAYSIZE(geometryNames));
         ImGui::ColorEdit3("Color", state.color);
         ImGui::Checkbox("Use norm as color", &state.useNormAsColor);
          ImGui::Checkbox("Draw norms", &state.drawNorms);
         ImGui::SliderInt("Tesselation", &state.tesselation, 3, 64);
+            ImGui::InputFloat3("Light position", state.lightPos);
+        }
         ImGui::End();
         /* ImGUI Rendering */
         ImGui::Render();
@@ -144,7 +148,7 @@ int main(int argc, char** argv)
         /* Rendering */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
-
+        glUniform3f(3, state.lightPos[0], state.lightPos[1], state.lightPos[2]);
         shader.Use();
         coordMesh.activate();
         glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());

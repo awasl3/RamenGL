@@ -21,6 +21,12 @@ layout(location = 2) uniform mat4 u_ProjMat;
 void main()
 {
     vec4 position = u_ProjMat * u_ViewMat * u_ModelMat * vec4(in_Position, 1.0f);
+    vec4 worldPos = u_ModelMat * vec4(in_Position, 1.f);
+    mat3 normalMat = transpose(inverse(mat3(u_ModelMat)));
+    vec3 n = normalize(normalMat * in_Normal);
     gl_Position = position;
+
+    out_ViewSpacePos = worldPos.xyz;
+    out_Normal = n;
     out_Color = in_Color;
 }
