@@ -23,10 +23,10 @@
 #define NUM_QUAD_VERTICES 4
 #define NUM_QUAD_INDICES 6
 
-static Vertex   quadVertices[ NUM_QUAD_VERTICES ] = { { .position = Vec3f{ -1.0f, -1.0f, 0.0f } },
-                                                      { .position = Vec3f{ 1.0f, -1.0f, 0.0f } },
-                                                      { .position = Vec3f{ 1.0f, 1.0f, 0.0f } },
-                                                      { .position = Vec3f{ -1.0f, 1.0f, 0.0f } } };
+static Vertex   quadVertices[ NUM_QUAD_VERTICES ] = { { .position = Vec3f{ -1.0f, -1.0f, 0.0f }, .uv =  Vec3f{  0.0f,  1.0f, 0.0f }},
+                                                      { .position = Vec3f{  1.0f, -1.0f, 0.0f }, .uv =  Vec3f{  1.0f,  1.0f, 0.0f } },
+                                                      { .position = Vec3f{  1.0f,  1.0f, 0.0f }, .uv =  Vec3f{  1.0f,  0.0f, 0.0f } },
+                                                      { .position = Vec3f{ -1.0f,  1.0f, 0.0f }, .uv =  Vec3f{  0.0f,  0.0f, 0.0f } } };
 static uint16_t quadIndices[ NUM_QUAD_INDICES ]   = { 0, 1, 2, 2, 3, 0 };
 
 int main(int argc, char** argv)
@@ -85,6 +85,15 @@ int main(int argc, char** argv)
     glVertexArrayAttribFormat(VAO, 3, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float));
     glEnableVertexArrayAttrib(VAO, 3);
     glVertexArrayAttribBinding(VAO, 3, 0);
+
+    GLuint textureHandle;
+    glCreateTextures(GL_TEXTURE_2D, 1, &textureHandle);
+    glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTextureStorage2D(textureHandle, 1, GL_RGBA8, image.GetWidth(), image.GetHeight());
+    glTextureSubImage2D(textureHandle, 0, 0, 0, image.GetWidth(), image.GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, image.Data());
 
     /* Some global GL states */
     glEnable(GL_DEPTH_TEST);
@@ -154,11 +163,12 @@ int main(int argc, char** argv)
 
         shader.Use();
         glBindVertexArray(VAO);
+        glBindTextureUnit(0,textureHandle);
         glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());
         glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
         glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
         glDrawElementsBaseVertex(GL_TRIANGLES, NUM_QUAD_INDICES, GL_UNSIGNED_SHORT, 0, 0);
-
+        
         SDL_GL_SwapWindow(pRamen->GetWindow());
 
         endCounter = SDL_GetPerformanceCounter();
