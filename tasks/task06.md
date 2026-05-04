@@ -10,15 +10,15 @@ und das Resultat in einer Textur zu speichern. Diese Textur wird *Shadowmap* gen
 Danach wird die Szene aus Sicht der Kamera, wie bisher, gerendert. Allerdings wird
 zusätzlich die Shadowmap gebunden und genutzt, um zu prüfen, ob das Fragment im
 Schatten liegt oder nicht. Konkret wird der Abstand des gegebenen Fragments zur Lichtquelle
-geprüft. Ist dieser Abstand groesser als ein *Blocker*, also ein Objekt welches
+geprüft. Ist dieser Abstand grösser als der Abstand zu einem *Blocker*, also ein Objekt welches
 die Sicht zur Lichtquelle blockiert, so befindet sich das Fragment im Schatten.
 
 ## Rendern in eine Textur
 Um in eine Textur zu rendern wird ein *Framebuffer* benötigt. Bisher haben wir
 den *default framebuffer* genutzt, der automatisch von OpenGL zur verfügung
-gestellt wird. Der Framebuffer kann wie ein Kanvas angesehen werden, in dem
+gestellt wird. Der Framebuffer kann wie ein Kanvas angesehen werden, auf dem
 die finalen Pixel landen.
-Einen Framebuffer erstellt folgendermassen:
+Einen Framebuffer erstellt man folgendermassen:
 ```cpp
 GLuint FBO;
 glCreateFramebuffers(1, &FBO);
@@ -32,7 +32,7 @@ Die Zuweisung erfolgt durch:
 ```cpp
 glNamedFramebufferTexture(FBO, GL_DEPTH_ATTACHMENT, texture, 0); /* 0 = mipmap level */
 ```
-Da wir lediglich in den Abstand von der Lichtquelle zu den Objekten (siehe oben)
+Da wir ausschliesslich am Abstand von der Lichtquelle zu den Objekten (siehe oben)
 interessiert sind, nutzen wir lediglich ein *depth attachment*. Bereiten
 Sie die Texture `texture` entsprechend vor.
 
@@ -54,6 +54,12 @@ Das zurückwechseln auf den default Framebuffer erfolgt durch:
 ```cpp
 glBindFramebuffer(GL_FRAMEBUFFER, 0);
 ```
+
+## Reprästentation der Lichtquelle
+
+Nutzen Sie eine weitere Kamera, um die Position und Orientierung der Lichtquelle zu
+bestimmen. Rendern Sie eine Kugel und färben diese in einer gut Sichtbaren Farbe
+ein, um die Lichtquelle in der Szene zu visualisieren.
 
 ## Samplen der Shadowmap
 
@@ -77,13 +83,13 @@ sondern eine eigene Textur erhalten. Laden Sie dazu ein geeignetes Bild.
 
 ## Hinweise
 
- - Um den Algorithmus von Shadowmapping zu verstehen, nutzen Sie zum Beispiel
-   das Buch *Computergrafik, Band 1* von Nischwitz et. al. Dieses ist 
-   in der Bibliothek verfügbar! Bedienen Sie sich gerne auch alternativer
-   Quellen ;) Sie müssen jedoch in der Lage sein Ihren Code zu erklären.
+- Um den Algorithmus von Shadowmapping zu verstehen, nutzen Sie zum Beispiel
+  das Buch *Computergrafik, Band 1* von Nischwitz et. al. Dieses ist 
+  in der Bibliothek verfügbar! Bedienen Sie sich gerne auch alternativer
+  Quellen ;) Sie müssen jedoch in der Lage sein Ihren Code zu erklären.
 
--  Sie werden auf einige Renderingartefakte beim Schattenwurf stossen. Dokumentieren Sie, wie
-   man diese nennt, wie sie entstehen und wie diesen entgegengewirkt werden kann.
+- Sie werden auf einige Renderingartefakte beim Schattenwurf stossen. Dokumentieren Sie, wie
+  man diese nennt, wie sie entstehen und wie diesen entgegengewirkt werden kann.
 
 
 
