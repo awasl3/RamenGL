@@ -60,7 +60,7 @@ glBindFramebuffer(GL_FRAMEBUFFER, 0);
 ## Reprästentation der Lichtquelle
 
 Nutzen Sie eine weitere Kamera, um die Position und Orientierung der Lichtquelle zu
-bestimmen. Rendern Sie eine Kugel und färben diese in einer gut Sichtbaren Farbe
+bestimmen. Rendern Sie eine Kugel und färben diese in einer gut sichtbaren Farbe
 ein, um die Lichtquelle in der Szene zu visualisieren.
 
 ## Samplen der Shadowmap
@@ -80,7 +80,7 @@ sondern eine eigene Textur erhalten. Laden Sie dazu ein geeignetes Bild.
 - Fügen Sie eine weiter *ImGui::Checkbox* hinzu, welche die Texturierung des Bodens
   an/ausschaltet. Bei ausgeschalteter Textur soll der Boden in weiss gerendert werden,
   sodass der Schatten gut sichtbar ist.
-- Fügen Sie ein *ImGui::DragFloat3*-Element hinzu, der es Ihnen ermöglicht, die Lichtquelle
+- Fügen Sie ein *ImGui::DragFloat3*-Element hinzu, das es Ihnen ermöglicht, die Lichtquelle
   entlang der Weltkoordinaten Achsen zu verschieben.
 
 ## Hinweise
