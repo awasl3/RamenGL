@@ -57,7 +57,7 @@ Das zurückwechseln auf den default Framebuffer erfolgt durch:
 glBindFramebuffer(GL_FRAMEBUFFER, 0);
 ```
 
-## Reprästentation der Lichtquelle
+## Repräsentation der Lichtquelle
 
 Nutzen Sie eine weitere Kamera, um die Position und Orientierung der Lichtquelle zu
 bestimmen. Rendern Sie eine Kugel und färben diese in einer gut sichtbaren Farbe
