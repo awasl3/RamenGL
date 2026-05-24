@@ -25,6 +25,12 @@
 #include "../ramen/rgl_shader.h"
 #include "../ramen/rgl_utils.h"
 
+
+#include "../util/mesh.h"
+#include "geometry/cube.h"
+#include "geometry/cylinder.h"
+#include "geometry/sphere.h"
+
 int main(int argc, char** argv)
 {
     Filesystem* pFS = Filesystem::Init(argc, argv, "assets");
@@ -47,22 +53,23 @@ int main(int argc, char** argv)
     Mat4f modelMat = Mat4f::Identity();
 
     /* Use coordinate system as a dummy model so you see how VBO, VAOs work again. */
-    GLuint VBO;
-    glCreateBuffers(1, &VBO);
-    glNamedBufferData(VBO, 6 * sizeof(Vertex), Utils::CoordSystemRHZU(), GL_STATIC_DRAW);
-
-    /* VAO. */
-    GLuint VAO;
-    glCreateVertexArrays(1, &VAO);
-    glVertexArrayVertexBuffer(VAO, 0, VBO, 0, sizeof(Vertex));
-    /* Position */
-    glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
-    glEnableVertexArrayAttrib(VAO, 0);
-    glVertexArrayAttribBinding(VAO, 0, 0);
-    /* Normal */
-    glVertexArrayAttribFormat(VAO, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
-    glEnableVertexArrayAttrib(VAO, 1);
-    glVertexArrayAttribBinding(VAO, 1, 0);
+    const Vertex* data = Utils::CoordSystemRHZU();
+    size_t size = 6;
+    std::vector<Vertex> vec(data, data + size);
+    Mesh coordMesh = Mesh(vec);
+    /* All controls write into this. Geometry is rebuilt from it each frame. */
+    enum Geometry { GEO_SPHERE = 0, GEO_CUBE = 1, GEO_CYLINDER = 2 };
+    struct ImGuiState
+    {
+        int   selectedGeometry = GEO_SPHERE;
+        float color[3]         = { 1.f, 0.f, 0.f };
+        bool  useNormAsColor   = false;
+        bool  drawNorms        = false;
+        int   tesselation = 8;
+        float lightPos[3] = { 2.f, 2.f, 2.f};
+    };
+    ImGuiState state;
+    const char* geometryNames[] = { "Sphere", "Cube", "Cylinder" };
 
     /* Some global GL states */
     glEnable(GL_DEPTH_TEST);
@@ -98,7 +105,32 @@ int main(int argc, char** argv)
                     isRunning = false;
                 }
                 break;
+                // Forward
+                case SDLK_W: { camera.DollyForward(0.1f);}break;
+                // BAckward
+                case SDLK_S: { camera.DollyForward(-0.1f);}break;
+                // Left
+                case SDLK_A: { camera.DollySide(-0.1f);}break;
+                // Right
+                case SDLK_D: { camera.DollySide(0.1f);}break;
+                // Up
+                case SDLK_R: { camera.DollyUp(0.1f);}break;
+                // Down
+                case SDLK_F: { camera.DollyUp(-0.1f);}break;
+                // Pitch up
+                case SDLK_UP: { camera.Pitch(2.0f);}break;
+                // Pitch down
+                case SDLK_DOWN: { camera.Pitch(-2.0f);}break;
+                // Yaw left
+                case SDLK_LEFT: { camera.Yaw(2.0f);}break;
+                // Yaw right
+                case SDLK_RIGHT: { camera.Yaw(-2.0f);}break;
 
+                // Roll left
+                case SDLK_Q: { camera.Roll(-2.0f);}break;
+                // Rollright
+                case SDLK_E: { camera.Roll(2.0f);}break;
+                
                 default:
                 {
                 }
@@ -125,21 +157,65 @@ int main(int argc, char** argv)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
-
+        ImGui::Begin("Controls");
+        if(ImGui::CollapsingHeader("Scene controls", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::Combo("Geometry", &state.selectedGeometry, geometryNames, IM_ARRAYSIZE(geometryNames));
+            ImGui::ColorEdit3("Color", state.color);
+            ImGui::Checkbox("Use norm as color", &state.useNormAsColor);
+            ImGui::Checkbox("Draw norms", &state.drawNorms);
+            ImGui::SliderInt("Tesselation", &state.tesselation, 3, 64);
+            ImGui::InputFloat3("Light position", state.lightPos);
+        }
+        if(ImGui::CollapsingHeader("Camera controls", ImGuiTreeNodeFlags_DefaultOpen)) {
+           ImGui::Text("WASD    - move camera");
+            ImGui::Text("R/F    - move up/down");
+            ImGui::Text("Arrows - pitch / yaw");
+            ImGui::Text("Q/E    - roll");
+        }
+       
+        ImGui::End();
         /* ImGUI Rendering */
         ImGui::Render();
 
         /* Rendering */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
-
+        glUniform3f(3, state.lightPos[0], state.lightPos[1], state.lightPos[2]);
         shader.Use();
-        glBindVertexArray(VAO);
+        coordMesh.activate();
         glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());
         glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
         glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
+        coordMesh.draw(GL_LINES);
 
-        glDrawArrays(GL_LINES, 0, 6);
+        /* Build only the selected geometry from current ImGui state, draw it, free it. */
+        Vec3f c(state.color[0], state.color[1], state.color[2]);
+        switch ( state.selectedGeometry )
+        {
+        case GEO_SPHERE:
+        {
+            Sphere s(c, state.tesselation, state.useNormAsColor, state.drawNorms);
+            s.draw(modelMat, viewMat, projMat);
+            s.deleteBuffers();
+            break;
+        }
+        case GEO_CUBE:
+        {
+            Cube cube(c, state.useNormAsColor, state.drawNorms);
+            cube.draw(modelMat, viewMat, projMat);
+            cube.deleteBuffers();
+            break;
+        }
+        case GEO_CYLINDER:
+        {
+            Cylinder cyl(c, state.tesselation, state.useNormAsColor, state.drawNorms);
+            cyl.draw(modelMat, viewMat, projMat);
+            cyl.deleteBuffers();
+            break;
+        }
+        }
+
+        
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -148,8 +224,7 @@ int main(int argc, char** argv)
 
     /* GL Resources shutdown. */
     shader.Delete();
-    glDeleteBuffers(1, &VBO);
-    glDeleteVertexArrays(1, &VAO);
+    coordMesh.deleteBuffers();
 
     /* Ramen Shutdown */
     pRamen->Shutdown();
