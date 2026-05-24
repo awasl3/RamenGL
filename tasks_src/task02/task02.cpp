@@ -21,6 +21,8 @@
 #include "../ramen/rgl_model.h"
 #include "../ramen/rgl_shader.h"
 
+#include "../util/mesh.cpp"
+
 int main(int argc, char** argv)
 {
     Filesystem* pFS = Filesystem::Init(argc, argv, "assets");
@@ -42,9 +44,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "Could not load model file.\n");
     }
 
-    // TODO: Create vertex layout via VAO.
-    // TODO: Create a buffer on GPU and upload the model's vertices.
-
+    Mesh modelMesh = Mesh(model.GetVertices());
     /* Create camera */
     Camera camera(Vec3f{ 0.0f, 0.0f, 20.0f });
 
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 
         // NOTE: Bonus: You can uncomment this and check out
         // what the UI library can do. We will work with it later.
-        // ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
 
         /* ImGUI Rendering */
         ImGui::Render();
@@ -124,13 +124,13 @@ int main(int argc, char** argv)
 
         shader.Use();
 
-        // TODO: Activate VAO.
+        modelMesh.activate();
 
         glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());
         glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
         glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
 
-        // TODO: Draw the model.
+        modelMesh.draw();
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -140,8 +140,7 @@ int main(int argc, char** argv)
     /* GL Resources shutdown. */
     shader.Delete();
 
-    // TODO: Delete OpenGL Resources you created (VAO, VBO).
-
+    modelMesh.deleteBuffers();
     /* Ramen Shutdown */
     pRamen->Shutdown();
 
